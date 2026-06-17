@@ -1,0 +1,89 @@
+# 🚀 Deployment Guide: Edge AI (.eim) to Raspberry Pi 4
+
+Dokumentasi ini menyediakan panduan langkah demi langkah untuk melakukan *deployment* model pengesan objek (*object detection*) dari Edge Impulse Studio ke Raspberry Pi 4 secara **100% Luar Talian (Offline Inference)** menggunakan persekitaran maya (*Virtual Environment*) dan Thonny IDE.
+
+---
+
+### Langkah 1: Eksport Fail Model (.eim) dari Edge Impulse Studio
+1. Log masuk ke **Edge Impulse Studio** melalui pelayar web laptop anda.
+2. Pergi ke menu **Deployment** di sebelah kiri.
+3. Di bahagian *Target Device*, cari dan pilih **Raspberry Pi 4**.
+4. Di bahagian bawah bawah, pilih optimasi **Quantized (int8)** untuk dapatkan kelajuan pemprosesan maksimum (*low latency*).
+5. Klik butang **Build**. Tunggu proses kompilasi awan selesai, fail binari bernama `buahaiv4.eim` akan dimuat turun secara automatik ke laptop anda.
+
+### Langkah 2: Cipta Folder Projek Baru & Pindah Fail `.eim` ke Raspberry Pi 4
+Sistem fail Linux memerlukan folder khusus yang setempat (*centralized*) untuk mengelakkan fail bertaburan dan bagi memudahkan ralat dikesan.
+1. Hidupkan Raspberry Pi 4 anda dan buka **File Manager** (atau Terminal).
+2. Di dalam direktori utama user iaitu `/home/pi/`, **cipta satu folder baru** dan namakan folder tersebut sebagai `Fruit_Sorting_Project`. Folder inilah yang akan memegang fail kod Python, fail model, dan persekitaran maya (`venv`) anda nanti.
+3. Salin fail `buahaiv4.eim` yang telah dimuat turun di laptop tadi ke dalam sebuah pendrive.
+4. Cucuk pendrive pada port USB Raspberry Pi 4.
+5. Salin fail `buahaiv4.eim` dari pendrive tersebut dan letakkan di dalam folder `Fruit_Sorting_Project` yang baru anda cipta tadi.
+
+### Langkah 3: Bina dan Aktifkan Persekitaran Maya (venv)
+Sistem operasi Raspberry Pi yang baharu mewajibkan penggunaan *Virtual Environment* (`venv`) untuk mengelakkan ralat *externally-managed-environment* semasa pemasangan pustaka luar menggunakan perintah `pip`.
+
+1. Buka **Terminal** di Raspberry Pi.
+2. Navigasi masuk ke dalam folder projek yang baru dicipta tadi menggunakan arahan:
+   ```bash
+   cd /home/pi/Fruit_Sorting_Project
+Bina persekitaran maya baharu di dalam folder tersebut dan namakan sebagai env:
+
+Bash
+python3 -m venv env
+Aktifkan persekitaran maya tersebut. Selepas diaktifkan, indikator (env) akan muncul di bahagian hadapan baris Terminal, menandakan persekitaran telah terisolasi dengan selamat:
+
+Bash
+source env/bin/activate
+Langkah 4: Pasang Pustaka Dependensi (Di Dalam venv)
+Pastikan Terminal anda masih memaparkan status aktif (env). Jalankan arahan ini mengikut turutan untuk memasang Edge Impulse Linux SDK dan OpenCV:
+
+Kemas kini pengurus pakej pip:
+
+Bash
+pip install --upgrade pip setuptools wheel
+Pasang pustaka OpenCV untuk pemprosesan imej dan kamera:
+
+Bash
+pip install opencv-python
+Pasang Edge Impulse Linux Python SDK:
+
+Bash
+pip install edge-impulse-linux
+Langkah 5: Beri Kebenaran Akses Fail Binari (Chmod)
+Secara lalai, sistem operasi Linux akan menyekat fail binari luar (fail .eim) daripada dieksekusi atas faktor keselamatan. Anda wajib menukar status fail ini kepada jenis "boleh laku" (executable). Jalankan arahan ini di Terminal:
+
+Bash
+chmod +x buahaiv4.eim
+Langkah 6: Konfigurasi Interpreter di Thonny IDE
+Supaya Thonny IDE boleh mengesan pustaka yang telah diinstall di dalam persekitaran maya (env) tadi dan mengelakkan ralat ModuleNotFoundError, ikut tetapan ini:
+
+Buka perisian Thonny IDE pada Raspberry Pi 4 anda.
+
+Di menu atas, klik pada Tools -> Options...
+
+Pilih tab Interpreter.
+
+Pada menu lungsur (dropdown), pilih Alternative Python 3 interpreter or virtual environment.
+
+Klik butang tiga titik ... di sebelah kanan ruang Details untuk mencari laluan interpreter secara manual.
+
+Navigasi masuk ke dalam folder projek /home/pi/Fruit_Sorting_Project/, pilih folder env, masuk ke folder bin, dan pilih fail executable bernama python3 atau python.
+
+Laluan mutlak (Absolute Path): /home/pi/Fruit_Sorting_Project/env/bin/python3
+
+Klik OK dan klik OK sekali lagi untuk menyimpan konfigurasi. Perhatikan status di penjuru bawah kanan skrin Thonny kini memaparkan persekitaran maya (env) anda sedang aktif.
+
+Langkah 7: Jalankan Skrip Utama Python Anda
+Sediakan skrip Python utama anda dan simpan di dalam folder yang sama iaitu /home/pi/Fruit_Sorting_Project/.
+
+Di dalam Thonny, klik File -> Open... dan pilih fail skrip utama tersebut (nama_fail_kau.py).
+
+Pastikan fail model buahaiv4.eim berada di dalam folder yang sama dengan fail skrip ini supaya fungsi pemanggilan fail di dalam kod dapat mengesan model tersebut dengan tepat.
+
+Tekan butang Run Current Script (ikon bulat hijau dengan anak panah putih, atau tekan kekunci F5).
+
+Status log "Otak AI Berjaya Dimuat Naik!" (atau log peranti aktif) akan dipaparkan pada bahagian Shell di bawah, menandakan Raspberry Pi sedang memproses matrik pengesanan objek terus daripada fail .eim secara tempatan tanpa internet.
+
+Tingkap grafik OpenCV akan muncul memaparkan penstriman kamera secara langsung berserta garisan penanda MODEL_LINE_Y.
+
+Untuk menghentikan sistem dengan selamat, tekan kekunci 'q' pada papan kekunci untuk menyahtugaskan (cleanup) keseluruhan pin GPIO kawalan mekanikal.
